@@ -39,24 +39,30 @@ exports.createExercise = async (exerciseData) => {
 exports.getExercisesByUserId = async (userId, { from, to, limit } = {}) => {
   try {
     let result = [];
-    
+    let sql = "";
+    let params = [userId];
+
     if (from && to) {
       const fromDate = new Date(from);
       const toDate = new Date(to);
-      
-      let sql = QUERIES.EXERCISE.GET_BY_USER_ID_WITH_DATE_RANGE;
-      let params = [userId, fromDate.toISOString().split('T')[0], toDate.toISOString().split('T')[0]];
-      
-      if (limit !== undefined && !isNaN(parseInt(limit))) {
-        sql += ' LIMIT ?';
-        params.push(parseInt(limit));
-      }
-      
-      result = await SQL3.all(sql, ...params);
+
+      sql = QUERIES.EXERCISE.GET_BY_USER_ID_WITH_DATE_RANGE;
+      params.push(
+        ...[
+          fromDate.toISOString().split("T")[0],
+          toDate.toISOString().split("T")[0],
+        ]
+      );
     } else {
-      result = await SQL3.all(QUERIES.EXERCISE.GET_BY_USER_ID, userId);
+      sql = QUERIES.EXERCISE.GET_BY_USER_ID;
     }
-    
+    if (limit !== undefined && !isNaN(parseInt(limit))) {
+      sql += " LIMIT ?";
+      params.push(parseInt(limit));
+    }
+    console.log(limit, params);
+    result = await SQL3.all(sql, ...params);
+
     return result.length === 0 ? [] : _transformExerciseObject(result);
   } catch (error) {
     throw new Error(ERROR_MESSAGES.DATABASE.QUERY_ERROR);
