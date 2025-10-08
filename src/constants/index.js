@@ -88,7 +88,11 @@ const QUERIES = {
       FROM User_exercise
       WHERE userID = ?
     `,
-
+    COUNT_BY_USER_ID_WITH_DATE_RANGE: `
+      SELECT COUNT(*) as count
+      FROM User_exercise
+      WHERE userID = ? AND date BETWEEN ? AND ?
+    `
   }
 };
 

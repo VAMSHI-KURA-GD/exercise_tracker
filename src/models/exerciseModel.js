@@ -40,25 +40,29 @@ exports.getExercisesByUserId = async (userId, { from, to, limit } = {}) => {
   try {
     let result = [];
     let sql = "";
+    let countSql = "";
     let params = [userId];
+    let countParams = [userId];
 
     if (from && to) {
       const fromDate = new Date(from);
       const toDate = new Date(to);
+      const dateRange = [
+        fromDate.toISOString().split("T")[0],
+        toDate.toISOString().split("T")[0],
+      ];
 
       sql = QUERIES.EXERCISE.GET_BY_USER_ID_WITH_DATE_RANGE;
-      params.push(
-        ...[
-          fromDate.toISOString().split("T")[0],
-          toDate.toISOString().split("T")[0],
-        ]
-      );
+      countSql = QUERIES.EXERCISE.COUNT_BY_USER_ID_WITH_DATE_RANGE;
+      params.push(...dateRange);
+      countParams.push(...dateRange);
     } else {
       sql = QUERIES.EXERCISE.GET_BY_USER_ID;
+      countSql = QUERIES.EXERCISE.COUNT_BY_USER_ID;
     }
 
-    // Get total count (without limit)
-    const countResult = await SQL3.get(QUERIES.EXERCISE.COUNT_BY_USER_ID, userId);
+    // Get total count (without limit, but respecting date range)
+    const countResult = await SQL3.get(countSql, ...countParams);
     const totalCount = countResult.count;
 
     // Apply limit if provided
