@@ -82,7 +82,13 @@ const QUERIES = {
       JOIN User_exercise ON (User._id = User_exercise.UserID)
       WHERE User_exercise.userID = ? AND date BETWEEN ? AND ?
       ORDER BY date ASC
-    `
+    `,
+    COUNT_BY_USER_ID: `
+      SELECT COUNT(*) as count
+      FROM User_exercise
+      WHERE userID = ?
+    `,
+
   }
 };
 

@@ -56,23 +56,30 @@ exports.getExercisesByUserId = async (userId, { from, to, limit } = {}) => {
     } else {
       sql = QUERIES.EXERCISE.GET_BY_USER_ID;
     }
+
+    // Get total count (without limit)
+    const countResult = await SQL3.get(QUERIES.EXERCISE.COUNT_BY_USER_ID, userId);
+    const totalCount = countResult.count;
+
+    // Apply limit if provided
     if (limit !== undefined && !isNaN(parseInt(limit))) {
       sql += " LIMIT ?";
       params.push(parseInt(limit));
     }
-    console.log(limit, params);
     result = await SQL3.all(sql, ...params);
 
-    return result.length === 0 ? [] : _transformExerciseObject(result);
+    return result.length === 0
+      ? []
+      : _transformExerciseObject(result, totalCount);
   } catch (error) {
     throw new Error(ERROR_MESSAGES.DATABASE.QUERY_ERROR);
   }
 };
 
-function _transformExerciseObject(exerciseArray) {
+function _transformExerciseObject(exerciseArray, totalCount) {
   return {
     username: exerciseArray[0].username,
-    count: exerciseArray.length,
+    count: totalCount,
     _id: exerciseArray[0].userID,
     logs: exerciseArray.map((exercise) => {
       const date = new Date(exercise.date).toDateString();
